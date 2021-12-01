@@ -58,7 +58,7 @@ fig = plt.figure()
 ax = Axes3D(fig)    # enable 3D plotting
 ax.view_init(azim=10,elev=5)
 ax.set_zlim(-35,40)
-ax.set_ylim(10,60)
+ax.set_ylim(20,70)
 ax.set_xlim(-25,25)
 # plot the mesh
 pc = art3d.Poly3DCollection(verts[faces], facecolors="#9FE2BF08", edgecolor="#27825315") 
@@ -73,7 +73,7 @@ fig = plt.figure()
 ax = Axes3D(fig)    # enable 3D plotting
 ax.view_init(azim=10,elev=5)
 ax.set_zlim(-35,40)
-ax.set_ylim(10,60)
+ax.set_ylim(20,70)
 ax.set_xlim(-25,25)
 # plot the mesh
 pc = art3d.Poly3DCollection(vNew[fNew], facecolors="#9FE2BF08", edgecolor="#27825315") 

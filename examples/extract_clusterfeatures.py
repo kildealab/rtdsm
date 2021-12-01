@@ -45,4 +45,6 @@ ax1.pcolormesh(DSM, cmap='inferno')
 ax2.pcolormesh(cluster, cmap='gray')
 for ax in fig.get_axes():
     ax.label_outer()
+ax1.set_title("DSM")
+ax2.set_title("20Gy Cluster")
 plt.show()

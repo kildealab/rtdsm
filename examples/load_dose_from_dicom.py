@@ -27,7 +27,7 @@ dosegrid, xs, ys, zs = rtdsm.get_doseinfo(Filename)
 # formatted as M[z,y,x]. This is the reverse order of how contour point data
 # is stored [x,y,z]
 
-# We can determine the location of the center of the voxel dosegrid[20,81,80] as follows
-loc = [ xs[80], ys[81], zs[20] ]
-print('Dose of voxel at [20,81,80] in the grid:',dosegrid[20,81,80],
-	'\nLocation in the patient coordinate system:',loc,'mm')
+# We can determine the location of the center of the voxel dosegrid[40,81,80] as follows
+loc = [ xs[80], ys[50], zs[40] ]
+print('Dose of voxel at [40,50,80] in the grid:',dosegrid[40,50,80],
+	'Gy\nLocation in the patient coordinate system:',loc,'mm')

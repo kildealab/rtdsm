@@ -1,7 +1,7 @@
 import numpy as np
 import pyvista as pv
 import math
-import rtdsm.helpers
+import rtdsm.helpers as helpers
 from rtdsm.meshandspline import get_spline_tangents
 # packages required to sort slice sets
 from operator import itemgetter

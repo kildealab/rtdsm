@@ -14,7 +14,7 @@ from rtdsm import examples
 
 ###############################################################################
 # Read in an ROI from a Dicom file and generate its surface mesh.
-Filename = examples.RSfile
+Filename = examples.RSfile()
 pointdata, centroiddata = rtdsm.get_pointcloud('Rectum', Filename)
 imgres = [0.908, 0.908, 2.0]   # the voxel resolution of the ROI’s image
 verts, faces, pvfaces = rtdsm.get_cubemarch_surface(pointdata, imgres)
@@ -64,7 +64,10 @@ from mpl_toolkits.mplot3d import Axes3D
 fig = plt.figure()
 ax = Axes3D(fig)
 ax.view_init(azim=10,elev=5)
+ax.set_zlim(-35,40)
+ax.set_ylim(20,70)
+ax.set_xlim(-25,25)
 for s in samplocs:
     Points = slices[s]['Slice'].points[1:]
-    ax.plot(Points[:,0], Points[:,1], Points[:,2])
+    ax.plot(Points[:,0], Points[:,1], Points[:,2],color='#0000FF60')
 plt.show()

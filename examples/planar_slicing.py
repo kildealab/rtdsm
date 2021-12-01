@@ -61,7 +61,10 @@ from mpl_toolkits.mplot3d import Axes3D
 fig = plt.figure()
 ax = Axes3D(fig)
 ax.view_init(azim=10,elev=5)
+ax.set_zlim(-35,40)
+ax.set_ylim(20,70)
+ax.set_xlim(-25,25)
 for s in sampallslices:
     Points = slices[s]['Slice'].points[1:]
-    ax.plot(Points[:,0], Points[:,1], Points[:,2])
+    ax.plot(Points[:,0], Points[:,1], Points[:,2],color='#0000FF60')
 plt.show()
