@@ -53,7 +53,7 @@ Several examples are included in the package to demonstrate how to perform the m
 | [`load_structure_from_dicom.py`](examples/load_structure_from_dicom.py) | Read in structure data from an RTStructure DICOM file. |
 | [`make_surface_mesh.py`](examples/make_surface_mesh.py) | Create a surface mesh from RTStructure DICOMdata. |
 | [`load_dose_from_dicom.py`](examples/load_dose_from_dicom.py) | Read in dose information from an RTDose DICOM file. |
-| [`dose_sampling.py`](examples/dose_sampling.py) | Sample dose from an RT dosegrid. |
+| [`sampling_dose.py`](examples/sampling_dose.py) | Sample dose from an RT dosegrid. |
 | [`set_sampling_points.py`](examples/set_sampling_points.py) | Identify points spaced along a spline for use during nonplanar slicing. |
 | [`planar_slicing.py`](examples/planar_slicing.py) | Use the planar slicing method to create slices of a surface mesh. |
 | [`nonplanar_slicing.py`](examples/nonplanar_slicing.py) | Use the nonplanar slicing method to create slices of a surface mesh. |
