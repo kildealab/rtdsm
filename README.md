@@ -41,11 +41,7 @@ Different research groups have developed different approaches for each of these 
 Note: This package was developed using Python 3.6.1 on Linux (Ubuntu 12.04.5) with the package versions listed above.
 
 ## Installation
-**rtdsm** can be installed from PyPI using pip on Python >= 3.6:
-```
-pip install rtdsm
-```
-Alternatively, you can install the latest version from GitHub.
+**rtdsm** can be installed by pulling the latest version from GitHub. Please note that your Python installation should be 3.6 or later.
 
 ## Examples and Documentation
 Several examples are included in the package to demonstrate how to perform the most common tasks associated with creating DSMs, as well as to provide context for the methodology used. Example files are also given for easy start-up.
