@@ -81,34 +81,65 @@ def get_pointcloud(ROI_Name, RS_filepath, excludeMultiPolygons=True):
     Notes
     -------
     Because of how the function get_cubemarch_surface() handles pointcloud data,
-    the output array contour may occasionally include np.nan values to indicate a
-    seperation of points between two polygons on the same image slice. This is 
-    done to prevent two polygons being mistakenly drawn as one and comprimizing
-    the shape of the output mesh and will only occur if excludeMultiPolygons is 
-    set to False.
+    the user must explictly specify how to handle multiple closed polygons on the
+    same axial slice of the image used for contouring. Failure to do this will 
+    result in them being combined into one continous polygon. By default, only
+    the largest polygons are kept per slice. If inclusion of multiple polygons
+    is specified to be allowed by the user, a coordinate of np.nan values will
+    be added to the output arrays to differentiate the additional polygons from
+    the rest of the structure.
     """
+    #Function updated April 2023 by HP to better account for the following situations:
+        #- Cases where the contours are not drawn on axial image slices
+        #- Cases where DICOM pointcloud data is not provided in ascending Z order
+        #   (as has been observed for contours provided by MIMvista)
     #STEP 1: get the raw mesh data
     mesh = contourdata_from_dicom(ROI_Name, RS_filepath)
-    #STEP2: prep output data arrays and begin adding data
+    #STEP2: prep output data arrays
     xdata, ydata, zdata = [], [], []
     Ztracking = [[],[],[]]     #used to check for duplicate Z (axial) indices
     CoMList = []
     extrax, extray, extraz = [], [], [] #holds point data for extra polygons per slice
     extraCOM = []
+    nonAxialSlices = False  #flag to indicate if structure slices are not aligned with image slices
+    #STEP3: begin adding data
     for plane in mesh:
         #get points for point cloud
         xvals = (plane[0::3])
         yvals = (plane[1::3])
         zvals = (plane[2::3])
-        #get details for centerline
-        zval = plane[2]
+        #STEP3A: Check if structure slices are aligned with axial imaging plane
+            #If not aligned, rtdsm will report how unaligned the slices are and
+            #will align the slice at its average Z location
+        if len(list(set(zvals))) > 1 and nonAxialSlices==False:
+            print('WARNING: Slice is angled away from axial image plane')
+            zmax = min(zvals)
+            zmin = max(zvals)
+            indmin = zvals.index(zmin)
+            indmax = zvals.index(zmax)
+            p1,p2 = np.array([xvals[indmin],yvals[indmin],zmin]),np.array([xvals[indmax],yvals[indmax],zmax])
+            h = np.linalg.norm(p1-p2)
+            o = zmax - zmin
+            angle = math.degrees(math.asin(o/h))
+            print('angle:',angle,'degrees')
+            nonAxialSlices = True
+        if nonAxialSlices == True:
+            #use the average Z position instead of the actual Z values
+            zval = round(sum(zvals)/len(zvals),2)
+            zvals = [zval] * len(zvals)
+        else:
+            zval = plane[2]
+        #STEP3B: Get the slice's polygon and calculate its area and CoM
         points = np.array([plane[0::3],plane[1::3]]).T
-        area, COM = PolygonArea(points[:,0],points[:,1]), list(np.append(points.mean(axis=0),[zval]))
-        #To ensure two closed polygons on the same slice aren't confused as one by the cubemarching
-            #function, we need to space out polygons in the same slice in the point data lists.
-            #We will use the convention that the largest polygon is always listed first
+        area, COM = rtdsm.PolygonArea(points[:,0],points[:,1]), list(np.append(points.mean(axis=0),[zval]))
+        #STEP3C: Check for other slices at the same Z location. If another slice
+            #does exist, the largest will be kept and the smaller will be saved
+            #to a secondary array that is added at the end of the pointcloud array
+            #after a buffer of NaN data
+            #NOTE: this is done to accomadate the method used to create the
+            #the surface mesh of the contour
         if zval in Ztracking[0] and area > Ztracking[1][Ztracking[0].index(zval)]:
-            #A larger polygon was found, so move the smaller to the extra list 
+            #The prexisting slice is smaller. Replace with the new one
             extraCOM.append(CoMList[Ztracking[0].index(zval)]) #swap and update the COMs
             CoMList[Ztracking[0].index(zval)] = COM
             Ztracking[1][Ztracking[0].index(zval)] = area #update the area in the tracking
@@ -128,8 +159,8 @@ def get_pointcloud(ROI_Name, RS_filepath, excludeMultiPolygons=True):
             ydata.extend(yvals)
             zdata.extend(zvals)
         elif zval in Ztracking[0]:
+            #The prexisting slice is larger. Add the new one to the extra array
             Ztracking[2][Ztracking[0].index(zval)] += 1
-            #Just add the data for this polygon to the extra arrays
             extraCOM.append(COM)
             if Ztracking[2][Ztracking[0].index(zval)] > 2:
                 extrax.append(np.nan)   #done to seperate two polygons on the same slice
@@ -147,7 +178,14 @@ def get_pointcloud(ROI_Name, RS_filepath, excludeMultiPolygons=True):
             xdata.extend(xvals)
             ydata.extend(yvals)
             zdata.extend(zvals)
-    #STEP 4: If excludeMultiPolygons FALSE, append extra arrays to the normal ones
+    #STEP 4: Final cleanup of the data
+    #STEP4A: Ensure CoM data is presented in ascending Z position order
+    if (CoMList[0,2] > CoMList[-1,2]):
+        CoMList = np.flipud(CoMList)
+        extraCOM = np.flipud(extraCOM)
+        #the pointcloud data does not be be switched as get_cubemarch_surface()
+        #will take do it automatically
+    #STEP4B: If excludeMultiPolygons FALSE, append extra arrays to the normal ones
     if excludeMultiPolygons == False and len(extraz)>0:
         if zdata[-1] == extraz[0]:
             xdata.append(np.nan)    #add a row of nan data if needed to prevent
@@ -157,9 +195,9 @@ def get_pointcloud(ROI_Name, RS_filepath, excludeMultiPolygons=True):
         ydata.extend(extray)
         zdata.extend(extraz)
         CoMList.extend(extraCOM)
+    #STEP5: Return the pointcloud and CoM data
     contour = np.array([xdata,ydata,zdata]).T
     CoMList = np.asarray(CoMList)
-    #return coordinate info, as well as the COM line
     return contour, CoMList
 
 def get_doseinfo(RD_filepath):
