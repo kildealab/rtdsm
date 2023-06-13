@@ -179,13 +179,7 @@ def get_pointcloud(ROI_Name, RS_filepath, excludeMultiPolygons=True):
             ydata.extend(yvals)
             zdata.extend(zvals)
     #STEP 4: Final cleanup of the data
-    #STEP4A: Ensure CoM data is presented in ascending Z position order
-    if (CoMList[0,2] > CoMList[-1,2]):
-        CoMList = np.flipud(CoMList)
-        extraCOM = np.flipud(extraCOM)
-        #the pointcloud data does not be be switched as get_cubemarch_surface()
-        #will take do it automatically
-    #STEP4B: If excludeMultiPolygons FALSE, append extra arrays to the normal ones
+    #STEP4A: If excludeMultiPolygons FALSE, append extra arrays to the normal ones
     if excludeMultiPolygons == False and len(extraz)>0:
         if zdata[-1] == extraz[0]:
             xdata.append(np.nan)    #add a row of nan data if needed to prevent
@@ -195,9 +189,15 @@ def get_pointcloud(ROI_Name, RS_filepath, excludeMultiPolygons=True):
         ydata.extend(extray)
         zdata.extend(extraz)
         CoMList.extend(extraCOM)
+    #STEP4B: Ensure CoM data is presented in ascending Z position order
+    CoMList = np.asarray(CoMList)
+    if (CoMList[0,2] > CoMList[-1,2]):
+        CoMList = np.flipud(CoMList)
+        extraCOM = np.flipud(extraCOM)
+        #the pointcloud data does not need to be switched as get_cubemarch_surface()
+        #will do it automatically 
     #STEP5: Return the pointcloud and CoM data
     contour = np.array([xdata,ydata,zdata]).T
-    CoMList = np.asarray(CoMList)
     return contour, CoMList
 
 def get_doseinfo(RD_filepath):
